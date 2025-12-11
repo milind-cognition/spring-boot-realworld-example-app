@@ -12,6 +12,10 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
+@Tag(name = "Users", description = "User registration and authentication endpoints")
 public class UsersApi {
   private UserRepository userRepository;
   private UserQueryService userQueryService;
@@ -36,6 +41,11 @@ public class UsersApi {
   private JwtService jwtService;
   private UserService userService;
 
+  @Operation(summary = "Register user", description = "Register a new user")
+  @ApiResponses({
+    @ApiResponse(responseCode = "201", description = "User registered successfully"),
+    @ApiResponse(responseCode = "422", description = "Validation error or duplicate email/username")
+  })
   @RequestMapping(path = "/users", method = POST)
   public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
     User user = userService.createUser(registerParam);
@@ -44,6 +54,12 @@ public class UsersApi {
         .body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
+  @Operation(summary = "Login user", description = "Login with email and password")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+    @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+    @ApiResponse(responseCode = "422", description = "Validation error")
+  })
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
@@ -69,11 +85,14 @@ public class UsersApi {
 @Getter
 @JsonRootName("user")
 @NoArgsConstructor
+@io.swagger.v3.oas.annotations.media.Schema(description = "Parameters for user login")
 class LoginParam {
   @NotBlank(message = "can't be empty")
   @Email(message = "should be an email")
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Email address of the user", example = "jake@jake.jake")
   private String email;
 
   @NotBlank(message = "can't be empty")
+  @io.swagger.v3.oas.annotations.media.Schema(description = "Password for the user account", example = "jakejake")
   private String password;
 }
