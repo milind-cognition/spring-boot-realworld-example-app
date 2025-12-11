@@ -1,6 +1,7 @@
 package io.spring;
 
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -17,7 +18,11 @@ public class OpenApiConfig {
             new Info()
                 .title("RealWorld API")
                 .version("1.0")
-                .description("Spring Boot RealWorld Example App API"))
+                .description("Spring Boot RealWorld Example App API - Generated with Devin AI (https://devin.ai)"))
+        .externalDocs(
+            new ExternalDocumentation()
+                .description("Devin AI Documentation")
+                .url("https://devin.ai"))
         .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
         .components(
             new Components()

@@ -41,7 +41,7 @@ public class UsersApi {
   private JwtService jwtService;
   private UserService userService;
 
-  @Operation(summary = "Register user", description = "Register a new user")
+  @Operation(summary = "Register user", description = "Register a new user. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "User registered successfully"),
     @ApiResponse(responseCode = "422", description = "Validation error or duplicate email/username")
@@ -54,7 +54,7 @@ public class UsersApi {
         .body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
-  @Operation(summary = "Login user", description = "Login with email and password")
+  @Operation(summary = "Login user", description = "Login with email and password. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User logged in successfully"),
     @ApiResponse(responseCode = "401", description = "Invalid credentials"),

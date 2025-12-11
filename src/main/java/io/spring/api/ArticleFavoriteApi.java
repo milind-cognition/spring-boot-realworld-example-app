@@ -32,7 +32,7 @@ public class ArticleFavoriteApi {
   private ArticleRepository articleRepository;
   private ArticleQueryService articleQueryService;
 
-  @Operation(summary = "Favorite article", description = "Favorite an article by slug")
+  @Operation(summary = "Favorite article", description = "Favorite an article by slug. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Article favorited successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -49,7 +49,7 @@ public class ArticleFavoriteApi {
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }
 
-  @Operation(summary = "Unfavorite article", description = "Unfavorite an article by slug")
+  @Operation(summary = "Unfavorite article", description = "Unfavorite an article by slug. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Article unfavorited successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),

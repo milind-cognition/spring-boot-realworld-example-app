@@ -31,7 +31,7 @@ public class ArticlesApi {
   private ArticleCommandService articleCommandService;
   private ArticleQueryService articleQueryService;
 
-  @Operation(summary = "Create article", description = "Create a new article")
+  @Operation(summary = "Create article", description = "Create a new article. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Article created successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -49,7 +49,7 @@ public class ArticlesApi {
         });
   }
 
-  @Operation(summary = "Get feed", description = "Get articles from users you follow")
+  @Operation(summary = "Get feed", description = "Get articles from users you follow. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Feed retrieved successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -62,7 +62,7 @@ public class ArticlesApi {
     return ResponseEntity.ok(articleQueryService.findUserFeed(user, new Page(offset, limit)));
   }
 
-  @Operation(summary = "List articles", description = "Get recent articles with optional filters")
+  @Operation(summary = "List articles", description = "Get recent articles with optional filters. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Articles retrieved successfully")
   })

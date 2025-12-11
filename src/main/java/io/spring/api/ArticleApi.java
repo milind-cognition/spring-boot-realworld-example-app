@@ -38,7 +38,7 @@ public class ArticleApi {
   private ArticleRepository articleRepository;
   private ArticleCommandService articleCommandService;
 
-  @Operation(summary = "Get article", description = "Get an article by slug")
+  @Operation(summary = "Get article", description = "Get an article by slug. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Article retrieved successfully"),
     @ApiResponse(responseCode = "404", description = "Article not found")
@@ -53,7 +53,7 @@ public class ArticleApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
-  @Operation(summary = "Update article", description = "Update an article by slug")
+  @Operation(summary = "Update article", description = "Update an article by slug. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Article updated successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -82,7 +82,7 @@ public class ArticleApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
-  @Operation(summary = "Delete article", description = "Delete an article by slug")
+  @Operation(summary = "Delete article", description = "Delete an article by slug. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Article deleted successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),

@@ -33,7 +33,7 @@ public class CurrentUserApi {
   private UserQueryService userQueryService;
   private UserService userService;
 
-  @Operation(summary = "Get current user", description = "Get the currently authenticated user")
+  @Operation(summary = "Get current user", description = "Get the currently authenticated user. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -47,7 +47,7 @@ public class CurrentUserApi {
         userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
   }
 
-  @Operation(summary = "Update current user", description = "Update the currently authenticated user")
+  @Operation(summary = "Update current user", description = "Update the currently authenticated user. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User updated successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),

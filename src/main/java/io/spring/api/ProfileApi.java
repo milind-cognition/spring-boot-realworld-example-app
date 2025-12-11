@@ -31,7 +31,7 @@ public class ProfileApi {
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
 
-  @Operation(summary = "Get profile", description = "Get a user's profile by username")
+  @Operation(summary = "Get profile", description = "Get a user's profile by username. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -46,7 +46,7 @@ public class ProfileApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
-  @Operation(summary = "Follow user", description = "Follow a user by username")
+  @Operation(summary = "Follow user", description = "Follow a user by username. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User followed successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -67,7 +67,7 @@ public class ProfileApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
-  @Operation(summary = "Unfollow user", description = "Unfollow a user by username")
+  @Operation(summary = "Unfollow user", description = "Unfollow a user by username. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User unfollowed successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),

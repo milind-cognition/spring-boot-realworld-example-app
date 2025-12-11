@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TagsApi {
   private TagsQueryService tagsQueryService;
 
-  @Operation(summary = "Get tags", description = "Get all tags")
+  @Operation(summary = "Get tags", description = "Get all tags. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Tags retrieved successfully")
   })

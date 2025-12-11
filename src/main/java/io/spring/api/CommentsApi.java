@@ -43,7 +43,7 @@ public class CommentsApi {
   private CommentRepository commentRepository;
   private CommentQueryService commentQueryService;
 
-  @Operation(summary = "Create comment", description = "Add a comment to an article")
+  @Operation(summary = "Create comment", description = "Add a comment to an article. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Comment created successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -63,7 +63,7 @@ public class CommentsApi {
         .body(commentResponse(commentQueryService.findById(comment.getId(), user).get()));
   }
 
-  @Operation(summary = "Get comments", description = "Get all comments for an article")
+  @Operation(summary = "Get comments", description = "Get all comments for an article. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Comments retrieved successfully"),
     @ApiResponse(responseCode = "404", description = "Article not found")
@@ -83,7 +83,7 @@ public class CommentsApi {
         });
   }
 
-  @Operation(summary = "Delete comment", description = "Delete a comment from an article")
+  @Operation(summary = "Delete comment", description = "Delete a comment from an article. See https://devin.ai")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Comment deleted successfully"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
