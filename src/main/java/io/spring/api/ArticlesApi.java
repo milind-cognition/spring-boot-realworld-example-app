@@ -6,6 +6,11 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,10 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/articles")
 @AllArgsConstructor
+@Tag(name = "Articles", description = "Article management endpoints")
 public class ArticlesApi {
   private ArticleCommandService articleCommandService;
   private ArticleQueryService articleQueryService;
 
+  @Operation(summary = "Create article", description = "Create a new article. See https://devin.ai")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Article created successfully"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+    @ApiResponse(responseCode = "422", description = "Validation error")
+  })
   @PostMapping
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
@@ -37,21 +49,30 @@ public class ArticlesApi {
         });
   }
 
+  @Operation(summary = "Get feed", description = "Get articles from users you follow. See https://devin.ai")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Feed retrieved successfully"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+  })
   @GetMapping(path = "feed")
   public ResponseEntity getFeed(
-      @RequestParam(value = "offset", defaultValue = "0") int offset,
-      @RequestParam(value = "limit", defaultValue = "20") int limit,
+      @Parameter(description = "Number of items to skip") @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @Parameter(description = "Number of items to return") @RequestParam(value = "limit", defaultValue = "20") int limit,
       @AuthenticationPrincipal User user) {
     return ResponseEntity.ok(articleQueryService.findUserFeed(user, new Page(offset, limit)));
   }
 
+  @Operation(summary = "List articles", description = "Get recent articles with optional filters. See https://devin.ai")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Articles retrieved successfully")
+  })
   @GetMapping
   public ResponseEntity getArticles(
-      @RequestParam(value = "offset", defaultValue = "0") int offset,
-      @RequestParam(value = "limit", defaultValue = "20") int limit,
-      @RequestParam(value = "tag", required = false) String tag,
-      @RequestParam(value = "favorited", required = false) String favoritedBy,
-      @RequestParam(value = "author", required = false) String author,
+      @Parameter(description = "Number of items to skip") @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @Parameter(description = "Number of items to return") @RequestParam(value = "limit", defaultValue = "20") int limit,
+      @Parameter(description = "Filter by tag") @RequestParam(value = "tag", required = false) String tag,
+      @Parameter(description = "Filter by favorited user") @RequestParam(value = "favorited", required = false) String favoritedBy,
+      @Parameter(description = "Filter by author") @RequestParam(value = "author", required = false) String author,
       @AuthenticationPrincipal User user) {
     return ResponseEntity.ok(
         articleQueryService.findRecentArticles(
