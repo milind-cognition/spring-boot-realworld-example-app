@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.SpecialMapper">
+    <insert id="insert">
+        INSERT INTO specials(id, happy_hour_id, description, item_name, item_type, happy_hour_price, original_price, discount_info, last_verified_at, created_at, updated_at)
+        VALUES(
+            #{special.id},
+            #{special.happyHourId},
+            #{special.description},
+            #{special.itemName},
+            #{special.itemType},
+            #{special.happyHourPrice},
+            #{special.originalPrice},
+            #{special.discountInfo},
+            #{special.lastVerifiedAt},
+            #{special.createdAt},
+            #{special.updatedAt}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE specials
+        SET
+            happy_hour_id = #{special.happyHourId},
+            description = #{special.description},
+            item_name = #{special.itemName},
+            item_type = #{special.itemType},
+            happy_hour_price = #{special.happyHourPrice},
+            original_price = #{special.originalPrice},
+            discount_info = #{special.discountInfo},
+            last_verified_at = #{special.lastVerifiedAt},
+            updated_at = #{special.updatedAt}
+        WHERE id = #{special.id}
+    </update>
+
+    <select id="findById" resultMap="special">
+        SELECT * FROM specials WHERE id = #{id}
+    </select>
+
+    <select id="findByHappyHourId" resultMap="special">
+        SELECT * FROM specials WHERE happy_hour_id = #{happyHourId} ORDER BY item_type, item_name
+    </select>
+
+    <select id="findByItemType" resultMap="special">
+        SELECT * FROM specials WHERE item_type = #{itemType} ORDER BY item_name
+    </select>
+
+    <resultMap id="special" type="io.spring.core.happyhour.Special">
+        <id column="id" property="id"/>
+        <result column="happy_hour_id" property="happyHourId"/>
+        <result column="description" property="description"/>
+        <result column="item_name" property="itemName"/>
+        <result column="item_type" property="itemType"/>
+        <result column="happy_hour_price" property="happyHourPrice"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="discount_info" property="discountInfo"/>
+        <result column="last_verified_at" property="lastVerifiedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+</mapper>
