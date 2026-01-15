@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.HappyHourMapper">
+    <insert id="insert">
+        INSERT INTO happy_hours(id, establishment_id, day_of_week, start_time, end_time, last_verified_at, created_at, updated_at)
+        VALUES(
+            #{happyHour.id},
+            #{happyHour.establishmentId},
+            #{happyHour.dayOfWeek},
+            #{happyHour.startTime},
+            #{happyHour.endTime},
+            #{happyHour.lastVerifiedAt},
+            #{happyHour.createdAt},
+            #{happyHour.updatedAt}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE happy_hours
+        SET
+            establishment_id = #{happyHour.establishmentId},
+            day_of_week = #{happyHour.dayOfWeek},
+            start_time = #{happyHour.startTime},
+            end_time = #{happyHour.endTime},
+            last_verified_at = #{happyHour.lastVerifiedAt},
+            updated_at = #{happyHour.updatedAt}
+        WHERE id = #{happyHour.id}
+    </update>
+
+    <select id="findById" resultMap="happyHour">
+        SELECT * FROM happy_hours WHERE id = #{id}
+    </select>
+
+    <select id="findByEstablishmentId" resultMap="happyHour">
+        SELECT * FROM happy_hours WHERE establishment_id = #{establishmentId} ORDER BY day_of_week, start_time
+    </select>
+
+    <select id="findByDayOfWeek" resultMap="happyHour">
+        SELECT * FROM happy_hours WHERE day_of_week = #{dayOfWeek} ORDER BY start_time
+    </select>
+
+    <select id="findActiveNow" resultMap="happyHour">
+        SELECT * FROM happy_hours 
+        WHERE day_of_week = #{dayOfWeek} 
+        AND start_time &lt;= #{currentTime} 
+        AND end_time &gt;= #{currentTime}
+        ORDER BY start_time
+    </select>
+
+    <resultMap id="happyHour" type="io.spring.core.happyhour.HappyHour">
+        <id column="id" property="id"/>
+        <result column="establishment_id" property="establishmentId"/>
+        <result column="day_of_week" property="dayOfWeek"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="last_verified_at" property="lastVerifiedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+</mapper>
