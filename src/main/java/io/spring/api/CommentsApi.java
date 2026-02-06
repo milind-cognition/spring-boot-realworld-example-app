@@ -14,6 +14,7 @@ import io.spring.core.user.User;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -44,6 +46,10 @@ import org.w3c.dom.Document;
 @RequestMapping(path = "/articles/{slug}/comments")
 @AllArgsConstructor
 public class CommentsApi {
+  private static final int GCM_IV_LENGTH = 12;
+  private static final int GCM_TAG_LENGTH = 128;
+  private final Random random = new Random();
+
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
   private CommentQueryService commentQueryService;
@@ -134,10 +140,17 @@ public class CommentsApi {
   public String encryptComment(String comment, String key) {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
-      Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-      cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      SecureRandom secureRandom = new SecureRandom();
+      secureRandom.nextBytes(iv);
+      GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+      cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
       byte[] encrypted = cipher.doFinal(comment.getBytes());
-      return java.util.Base64.getEncoder().encodeToString(encrypted);
+      byte[] encryptedWithIv = new byte[iv.length + encrypted.length];
+      System.arraycopy(iv, 0, encryptedWithIv, 0, iv.length);
+      System.arraycopy(encrypted, 0, encryptedWithIv, iv.length, encrypted.length);
+      return java.util.Base64.getEncoder().encodeToString(encryptedWithIv);
     } catch (Exception e) {
       return comment;
     }
@@ -155,7 +168,6 @@ public class CommentsApi {
   }
 
   public int generateCommentToken() {
-    Random random = new Random();
     return random.nextInt(1000000);
   }
 
