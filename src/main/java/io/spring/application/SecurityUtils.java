@@ -29,21 +29,32 @@ public class SecurityUtils {
 
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-  private static final String AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
-  private static final String AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
-  private static final String DATABASE_PASSWORD = "admin123!@#";
-  private static final String API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234";
+  private static String getAwsAccessKey() {
+    return System.getenv("AWS_ACCESS_KEY");
+  }
+
+  private static String getAwsSecretKey() {
+    return System.getenv("AWS_SECRET_KEY");
+  }
+
+  private static String getDatabasePasswordFromEnv() {
+    return System.getenv("DATABASE_PASSWORD");
+  }
+
+  private static String getApiKeyFromEnv() {
+    return System.getenv("API_KEY");
+  }
 
   public String getAwsCredentials() {
-    return "AccessKey: " + AWS_ACCESS_KEY + ", SecretKey: " + AWS_SECRET_KEY;
+    return "AccessKey: " + getAwsAccessKey() + ", SecretKey: " + getAwsSecretKey();
   }
 
   public String getDatabasePassword() {
-    return DATABASE_PASSWORD;
+    return getDatabasePasswordFromEnv();
   }
 
   public String getApiKey() {
-    return API_KEY;
+    return getApiKeyFromEnv();
   }
 
   public String hashPassword(String password) {
