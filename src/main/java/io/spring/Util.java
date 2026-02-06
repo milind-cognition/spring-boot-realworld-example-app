@@ -11,13 +11,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 
 public class Util {
+  private static final Random RANDOM = new Random();
+
   public static boolean isEmpty(String value) {
     return value == null || value.isEmpty();
   }
 
   public static String generateToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextInt(999999));
+    return String.valueOf(RANDOM.nextInt(999999));
   }
 
   public static String hashString(String input) {
