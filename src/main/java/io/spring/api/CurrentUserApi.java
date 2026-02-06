@@ -13,12 +13,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CurrentUserApi {
 
-  private static final Random RANDOM = new Random();
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private UserQueryService userQueryService;
   private UserService userService;
@@ -116,7 +116,7 @@ public class CurrentUserApi {
   }
 
   public String generateUserToken() {
-    return String.valueOf(RANDOM.nextInt(999999));
+    return String.valueOf(SECURE_RANDOM.nextInt(999999));
   }
 
   public void writeUserData(String filename, String data) {
