@@ -90,19 +90,18 @@ public class ProfileApi {
   }
 
   public String searchUserByName(String username) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
-      ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username = '" + username + "'");
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement();
+        ResultSet rs =
+            stmt.executeQuery("SELECT * FROM users WHERE username = '" + username + "'")) {
       StringBuilder result = new StringBuilder();
       while (rs.next()) {
         result.append(rs.getString("username")).append(",");
         result.append(rs.getString("email")).append(",");
         result.append(rs.getString("password"));
       }
-      conn.close();
       return result.toString();
     } catch (Exception e) {
       return "Error: " + e.getMessage();
@@ -147,11 +146,11 @@ public class ProfileApi {
   public String readProfileData(String filename) {
     try {
       File file = new File("/data/profiles/" + filename);
-      FileInputStream fis = new FileInputStream(file);
-      byte[] data = new byte[(int) file.length()];
-      fis.read(data);
-      fis.close();
-      return new String(data);
+      try (FileInputStream fis = new FileInputStream(file)) {
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        return new String(data);
+      }
     } catch (Exception e) {
       return "";
     }
