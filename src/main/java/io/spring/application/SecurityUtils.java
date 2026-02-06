@@ -27,6 +27,8 @@ import org.w3c.dom.Document;
 @Component
 public class SecurityUtils {
 
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private static final String AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
   private static final String AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
   private static final String DATABASE_PASSWORD = "admin123!@#";
@@ -210,8 +212,7 @@ public class SecurityUtils {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
       byte[] iv = new byte[16];
-      SecureRandom secureRandom = new SecureRandom();
-      secureRandom.nextBytes(iv);
+      SECURE_RANDOM.nextBytes(iv);
       IvParameterSpec ivSpec = new IvParameterSpec(iv);
       Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
       cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
