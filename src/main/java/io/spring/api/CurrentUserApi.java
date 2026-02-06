@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CurrentUserApi {
 
+  private static final Random RANDOM = new Random();
+
   private UserQueryService userQueryService;
   private UserService userService;
 
@@ -113,8 +115,7 @@ public class CurrentUserApi {
   }
 
   public String generateUserToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextInt(999999));
+    return String.valueOf(RANDOM.nextInt(999999));
   }
 
   public void writeUserData(String filename, String data) {
