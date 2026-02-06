@@ -1,0 +1,120 @@
+name: SonarQube Scan
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  sonarqube:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./gradlew build sonar -x spotlessCheck -x spotlessJavaCheck \
+            -Dsonar.projectKey=milind-cognition_spring-boot-realworld-example-app \
+            -Dsonar.organization=milind-cognition \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+
+      - name: Check Quality Gate
+        id: quality_gate
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # Wait for analysis to complete
+          sleep 10
+          
+          # Get quality gate status
+          QUALITY_GATE_STATUS=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=milind-cognition_spring-boot-realworld-example-app&pullRequest=${{ github.event.pull_request.number }}" \
+            | jq -r '.projectStatus.status')
+          
+          echo "quality_gate_status=$QUALITY_GATE_STATUS" >> $GITHUB_OUTPUT
+          echo "Quality Gate Status: $QUALITY_GATE_STATUS"
+          
+          if [ "$QUALITY_GATE_STATUS" != "OK" ]; then
+            echo "Quality Gate failed!"
+            exit 1
+          fi
+
+  trigger-devin-fix:
+    name: Trigger Devin to Fix Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: sonarqube
+    if: failure()
+    
+    steps:
+      - name: Get SonarQube Issues
+        id: get_issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # Fetch vulnerabilities and code smells from SonarQube
+          ISSUES=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=milind-cognition_spring-boot-realworld-example-app&pullRequest=${{ github.event.pull_request.number }}&types=VULNERABILITY,BUG&ps=100" \
+            | jq -c '.issues')
+          
+          echo "issues=$ISSUES" >> $GITHUB_OUTPUT
+          echo "Found issues: $(echo $ISSUES | jq length)"
+
+      - name: Trigger Devin API
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+        run: |
+          ISSUES='${{ steps.get_issues.outputs.issues }}'
+          
+          # Create a prompt for Devin to fix the vulnerabilities
+          PROMPT="SonarQube scan found vulnerabilities in PR #${{ github.event.pull_request.number }} on branch ${{ github.head_ref }} in the repository ${{ github.repository }}.
+
+          Please fix the following SonarQube issues:
+          $ISSUES
+
+          Instructions:
+          1. Clone the repository and checkout the branch ${{ github.head_ref }}
+          2. Review each vulnerability/bug reported by SonarQube
+          3. Fix the issues following secure coding best practices
+          4. Commit and push the fixes to the same branch
+          5. The fixes should pass SonarQube quality gate"
+
+          # Call Devin API to create a session
+          curl -X POST "https://api.devin.ai/v1/sessions" \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"prompt\": $(echo "$PROMPT" | jq -Rs .)
+            }"
