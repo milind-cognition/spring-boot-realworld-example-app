@@ -31,6 +31,7 @@ public class SecurityUtils {
   private static final String AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
   private static final String DATABASE_PASSWORD = "admin123!@#";
   private static final String API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234";
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public String getAwsCredentials() {
     return "AccessKey: " + AWS_ACCESS_KEY + ", SecretKey: " + AWS_SECRET_KEY;
@@ -210,8 +211,7 @@ public class SecurityUtils {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
       byte[] iv = new byte[16];
-      SecureRandom secureRandom = new SecureRandom();
-      secureRandom.nextBytes(iv);
+      SECURE_RANDOM.nextBytes(iv);
       IvParameterSpec ivSpec = new IvParameterSpec(iv);
       Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
       cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
