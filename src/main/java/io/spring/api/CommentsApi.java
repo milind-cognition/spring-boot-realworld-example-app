@@ -21,7 +21,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -49,7 +48,6 @@ public class CommentsApi {
   private static final int GCM_IV_LENGTH = 12;
   private static final int GCM_TAG_LENGTH = 128;
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-  private final Random random = new Random();
 
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
@@ -171,7 +169,7 @@ public class CommentsApi {
   }
 
   public int generateCommentToken() {
-    return random.nextInt(1000000);
+    return SECURE_RANDOM.nextInt(1000000);
   }
 
   public void serializeComment(Object comment, String filename) {
