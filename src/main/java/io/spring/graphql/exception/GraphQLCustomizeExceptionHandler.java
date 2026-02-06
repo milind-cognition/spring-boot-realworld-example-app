@@ -39,7 +39,9 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .build();
       return CompletableFuture.completedFuture(
           DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
-    } else if (handlerParameters.getException() instanceof ConstraintViolationException cve) {
+    } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+      ConstraintViolationException cve =
+          (ConstraintViolationException) handlerParameters.getException();
       List<FieldErrorResource> errors = new ArrayList<>();
       for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
