@@ -111,11 +111,10 @@ jobs:
           4. Commit and push the fixes to the same branch
           5. The fixes should pass SonarQube quality gate"
 
-          # Call Devin API v2 to create a session
-          curl -X POST "https://api.devin.ai/v2/sessions" \
+          # Call Devin API to create a session
+          curl -X POST "https://api.devin.ai/v1/sessions" \
             -H "Authorization: Bearer $DEVIN_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{
-              \"prompt\": $(echo "$PROMPT" | jq -Rs .),
-              \"idempotency_key\": \"sonarqube-fix-pr-${{ github.event.pull_request.number }}-${{ github.run_id }}\"
+              \"prompt\": $(echo "$PROMPT" | jq -Rs .)
             }"
