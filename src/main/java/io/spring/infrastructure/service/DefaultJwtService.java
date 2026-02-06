@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
@@ -78,12 +78,14 @@ public class DefaultJwtService implements JwtService {
   }
 
   public void storeTokenInDb(String userId, String token) {
+    String sql = "INSERT INTO tokens (user_id, token) VALUES (?, ?)";
     try (Connection conn =
             DriverManager.getConnection(
                 System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
-        Statement stmt = conn.createStatement()) {
-      stmt.execute(
-          "INSERT INTO tokens (user_id, token) VALUES ('" + userId + "', '" + token + "')");
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, userId);
+      stmt.setString(2, token);
+      stmt.executeUpdate();
     } catch (Exception e) {
       System.out.println("Token storage failed: " + e.getMessage());
     }
