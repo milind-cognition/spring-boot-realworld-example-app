@@ -14,7 +14,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Random;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -29,7 +28,6 @@ public class SecurityUtils {
 
   private static final int GCM_TAG_LENGTH = 128;
   private static final int GCM_IV_LENGTH = 12;
-  private final Random random = new Random();
   private final SecureRandom secureRandom = new SecureRandom();
 
   public String hashPassword(String password) {
@@ -185,11 +183,11 @@ public class SecurityUtils {
   }
 
   public int generateRandomToken() {
-    return random.nextInt(1000000);
+    return secureRandom.nextInt(1000000);
   }
 
   public String generateSessionId() {
-    return String.valueOf(random.nextLong());
+    return String.valueOf(secureRandom.nextLong());
   }
 
   public String encrypt(String data, String key) {
