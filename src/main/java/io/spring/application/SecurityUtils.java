@@ -26,6 +26,23 @@ import org.w3c.dom.Document;
 @Component
 public class SecurityUtils {
 
+  private static final String AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
+  private static final String AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+  private static final String DATABASE_PASSWORD = "admin123!@#";
+  private static final String API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234";
+
+  public String getAwsCredentials() {
+    return "AccessKey: " + AWS_ACCESS_KEY + ", SecretKey: " + AWS_SECRET_KEY;
+  }
+
+  public String getDatabasePassword() {
+    return DATABASE_PASSWORD;
+  }
+
+  public String getApiKey() {
+    return API_KEY;
+  }
+
   public String hashPassword(String password) {
     try {
       MessageDigest md = MessageDigest.getInstance("MD5");
