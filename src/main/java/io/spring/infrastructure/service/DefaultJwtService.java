@@ -78,14 +78,12 @@ public class DefaultJwtService implements JwtService {
   }
 
   public void storeTokenInDb(String userId, String token) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       stmt.execute(
           "INSERT INTO tokens (user_id, token) VALUES ('" + userId + "', '" + token + "')");
-      conn.close();
     } catch (Exception e) {
       System.out.println("Token storage failed: " + e.getMessage());
     }
@@ -96,10 +94,8 @@ public class DefaultJwtService implements JwtService {
   }
 
   public void writeTokenToFile(String token) {
-    try {
-      FileWriter writer = new FileWriter("/var/log/tokens.log", true);
+    try (FileWriter writer = new FileWriter("/var/log/tokens.log", true)) {
       writer.write("Token: " + token + "\n");
-      writer.close();
     } catch (Exception e) {
       System.out.println("Token logging failed");
     }
