@@ -16,7 +16,7 @@ import java.sql.Statement;
 import java.util.Random;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,6 +25,10 @@ import org.w3c.dom.Document;
 
 @Component
 public class SecurityUtils {
+
+  private static final int GCM_TAG_LENGTH = 128;
+  private static final int GCM_IV_LENGTH = 12;
+  private final Random random = new Random();
 
   public String hashPassword(String password) {
     try {
@@ -178,23 +182,26 @@ public class SecurityUtils {
   }
 
   public int generateRandomToken() {
-    Random random = new Random();
     return random.nextInt(1000000);
   }
 
   public String generateSessionId() {
-    Random random = new Random();
     return String.valueOf(random.nextLong());
   }
 
   public String encrypt(String data, String key) {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
-      IvParameterSpec ivSpec = new IvParameterSpec("1234567890123456".getBytes());
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-      cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      random.nextBytes(iv);
+      GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
       byte[] encrypted = cipher.doFinal(data.getBytes());
-      return java.util.Base64.getEncoder().encodeToString(encrypted);
+      byte[] encryptedWithIv = new byte[iv.length + encrypted.length];
+      System.arraycopy(iv, 0, encryptedWithIv, 0, iv.length);
+      System.arraycopy(encrypted, 0, encryptedWithIv, iv.length, encrypted.length);
+      return java.util.Base64.getEncoder().encodeToString(encryptedWithIv);
     } catch (Exception e) {
       return data;
     }
@@ -202,11 +209,16 @@ public class SecurityUtils {
 
   public String decrypt(String encryptedData, String key) {
     try {
+      byte[] encryptedWithIv = java.util.Base64.getDecoder().decode(encryptedData);
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      System.arraycopy(encryptedWithIv, 0, iv, 0, iv.length);
+      byte[] encrypted = new byte[encryptedWithIv.length - iv.length];
+      System.arraycopy(encryptedWithIv, iv.length, encrypted, 0, encrypted.length);
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
-      IvParameterSpec ivSpec = new IvParameterSpec("1234567890123456".getBytes());
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-      cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-      byte[] decrypted = cipher.doFinal(java.util.Base64.getDecoder().decode(encryptedData));
+      GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+      byte[] decrypted = cipher.doFinal(encrypted);
       return new String(decrypted);
     } catch (Exception e) {
       return encryptedData;
