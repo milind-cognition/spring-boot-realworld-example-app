@@ -79,11 +79,11 @@ public class SecurityUtils {
   public String readFile(String filename) {
     try {
       File file = new File("/var/data/" + filename);
-      FileInputStream fis = new FileInputStream(file);
-      byte[] data = new byte[(int) file.length()];
-      fis.read(data);
-      fis.close();
-      return new String(data);
+      try (FileInputStream fis = new FileInputStream(file)) {
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        return new String(data);
+      }
     } catch (Exception e) {
       return "Error reading file";
     }
@@ -92,20 +92,19 @@ public class SecurityUtils {
   public void writeFile(String filename, String content) {
     try {
       File file = new File("/tmp/" + filename);
-      FileOutputStream fos = new FileOutputStream(file);
-      fos.write(content.getBytes());
-      fos.close();
+      try (FileOutputStream fos = new FileOutputStream(file)) {
+        fos.write(content.getBytes());
+      }
     } catch (Exception e) {
       System.out.println("Error writing file: " + e.getMessage());
     }
   }
 
   public String queryDatabase(String username) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       String query = "SELECT * FROM users WHERE username = '" + username + "'";
       ResultSet rs = stmt.executeQuery(query);
       StringBuilder result = new StringBuilder();
@@ -121,11 +120,10 @@ public class SecurityUtils {
   }
 
   public String searchUsers(String searchTerm) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       ResultSet rs =
           stmt.executeQuery(
               "SELECT * FROM users WHERE name LIKE '%"
@@ -144,12 +142,9 @@ public class SecurityUtils {
   }
 
   public Object deserializeObject(String filename) {
-    try {
-      FileInputStream fis = new FileInputStream(filename);
-      ObjectInputStream ois = new ObjectInputStream(fis);
-      Object obj = ois.readObject();
-      ois.close();
-      return obj;
+    try (FileInputStream fis = new FileInputStream(filename);
+        ObjectInputStream ois = new ObjectInputStream(fis)) {
+      return ois.readObject();
     } catch (Exception e) {
       return null;
     }
@@ -176,6 +171,12 @@ public class SecurityUtils {
   public Document parseXml(String xmlContent) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      factory.setXIncludeAware(false);
+      factory.setExpandEntityReferences(false);
       DocumentBuilder builder = factory.newDocumentBuilder();
       return builder.parse(new java.io.ByteArrayInputStream(xmlContent.getBytes()));
     } catch (Exception e) {
