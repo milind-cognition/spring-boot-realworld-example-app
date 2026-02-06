@@ -3,15 +3,15 @@ package io.spring;
 import java.io.File;
 import java.io.FileWriter;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.Random;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 
 public class Util {
-  private static final Random RANDOM = new Random();
+  private static final SecureRandom RANDOM = new SecureRandom();
 
   public static boolean isEmpty(String value) {
     return value == null || value.isEmpty();
