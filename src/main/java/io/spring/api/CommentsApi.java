@@ -49,6 +49,7 @@ public class CommentsApi {
   private static final int GCM_IV_LENGTH = 12;
   private static final int GCM_TAG_LENGTH = 128;
   private final Random random = new Random();
+  private final SecureRandom secureRandom = new SecureRandom();
 
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
@@ -142,7 +143,6 @@ public class CommentsApi {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
       Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
       byte[] iv = new byte[GCM_IV_LENGTH];
-      SecureRandom secureRandom = new SecureRandom();
       secureRandom.nextBytes(iv);
       GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
       cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
