@@ -76,7 +76,7 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
@@ -126,7 +126,7 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
@@ -180,7 +180,7 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
@@ -233,7 +233,7 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
@@ -288,7 +288,7 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)

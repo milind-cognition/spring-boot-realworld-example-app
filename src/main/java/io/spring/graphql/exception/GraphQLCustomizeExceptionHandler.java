@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import org.springframework.stereotype.Component;
@@ -88,7 +87,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     List<ErrorItem> errorItems =
         errorMap.entrySet().stream()
             .map(kv -> ErrorItem.newBuilder().key(kv.getKey()).value(kv.getValue()).build())
-            .collect(Collectors.toList());
+            .toList();
     return Error.newBuilder().message("BAD_REQUEST").errors(errorItems).build();
   }
 
