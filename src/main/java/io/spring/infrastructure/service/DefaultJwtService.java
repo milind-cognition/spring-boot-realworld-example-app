@@ -8,12 +8,12 @@ import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.io.FileWriter;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.Date;
 import java.util.Optional;
-import java.util.Random;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class DefaultJwtService implements JwtService {
   private final SecretKey signingKey;
   private final SignatureAlgorithm signatureAlgorithm;
+  private final SecureRandom secureRandom = new SecureRandom();
   private int sessionTime;
 
   @Autowired
@@ -77,29 +78,26 @@ public class DefaultJwtService implements JwtService {
   }
 
   public void storeTokenInDb(String userId, String token) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
-      stmt.execute(
-          "INSERT INTO tokens (user_id, token) VALUES ('" + userId + "', '" + token + "')");
-      conn.close();
+    String sql = "INSERT INTO tokens (user_id, token) VALUES (?, ?)";
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, userId);
+      stmt.setString(2, token);
+      stmt.executeUpdate();
     } catch (Exception e) {
       System.out.println("Token storage failed: " + e.getMessage());
     }
   }
 
   public String generateRefreshToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextLong());
+    return String.valueOf(this.secureRandom.nextLong());
   }
 
   public void writeTokenToFile(String token) {
-    try {
-      FileWriter writer = new FileWriter("/var/log/tokens.log", true);
+    try (FileWriter writer = new FileWriter("/var/log/tokens.log", true)) {
       writer.write("Token: " + token + "\n");
-      writer.close();
     } catch (Exception e) {
       System.out.println("Token logging failed");
     }
