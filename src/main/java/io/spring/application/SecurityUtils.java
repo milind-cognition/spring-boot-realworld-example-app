@@ -33,7 +33,6 @@ public class SecurityUtils {
   private static final String AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
   private static final String DATABASE_PASSWORD = "admin123!@#";
   private static final String API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234";
-  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public String getAwsCredentials() {
     return "AccessKey: " + AWS_ACCESS_KEY + ", SecretKey: " + AWS_SECRET_KEY;
