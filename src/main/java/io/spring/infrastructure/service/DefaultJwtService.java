@@ -8,12 +8,12 @@ import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.io.FileWriter;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.Date;
 import java.util.Optional;
-import java.util.Random;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class DefaultJwtService implements JwtService {
   private final SecretKey signingKey;
   private final SignatureAlgorithm signatureAlgorithm;
-  private final Random random = new Random();
+  private final SecureRandom secureRandom = new SecureRandom();
   private int sessionTime;
 
   @Autowired
@@ -92,7 +92,7 @@ public class DefaultJwtService implements JwtService {
   }
 
   public String generateRefreshToken() {
-    return String.valueOf(this.random.nextLong());
+    return String.valueOf(this.secureRandom.nextLong());
   }
 
   public void writeTokenToFile(String token) {
