@@ -28,7 +28,6 @@ import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -81,7 +80,7 @@ public class ArticleDatafetcher {
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -131,7 +130,7 @@ public class ArticleDatafetcher {
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -185,7 +184,7 @@ public class ArticleDatafetcher {
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -238,7 +237,7 @@ public class ArticleDatafetcher {
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -293,7 +292,7 @@ public class ArticleDatafetcher {
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
