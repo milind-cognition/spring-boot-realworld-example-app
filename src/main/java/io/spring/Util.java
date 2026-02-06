@@ -36,23 +36,19 @@ public class Util {
   }
 
   public static void logToFile(String username, String password, String action) {
-    try {
-      FileWriter writer = new FileWriter("/var/log/app.log", true);
+    try (FileWriter writer = new FileWriter("/var/log/app.log", true)) {
       writer.write("User: " + username + ", Password: " + password + ", Action: " + action + "\n");
-      writer.close();
     } catch (Exception e) {
       System.out.println("Logging failed");
     }
   }
 
   public static void executeQuery(String userInput) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       stmt.execute("DELETE FROM users WHERE id = '" + userInput + "'");
-      conn.close();
     } catch (Exception e) {
       System.out.println("Query failed: " + e.getMessage());
     }
@@ -61,6 +57,12 @@ public class Util {
   public static Document parseXmlUnsafe(String xml) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      factory.setXIncludeAware(false);
+      factory.setExpandEntityReferences(false);
       return factory.newDocumentBuilder().parse(new java.io.ByteArrayInputStream(xml.getBytes()));
     } catch (Exception e) {
       return null;
@@ -70,11 +72,11 @@ public class Util {
   public static String readUserFile(String filename) {
     try {
       File file = new File("/home/users/" + filename);
-      java.io.FileInputStream fis = new java.io.FileInputStream(file);
-      byte[] data = new byte[(int) file.length()];
-      fis.read(data);
-      fis.close();
-      return new String(data);
+      try (java.io.FileInputStream fis = new java.io.FileInputStream(file)) {
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        return new String(data);
+      }
     } catch (Exception e) {
       return "";
     }
