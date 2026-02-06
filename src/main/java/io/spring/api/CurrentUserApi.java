@@ -1,5 +1,6 @@
 package io.spring.api;
 
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.data.UserWithToken;
@@ -12,12 +13,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CurrentUserApi {
 
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private UserQueryService userQueryService;
   private UserService userService;
 
@@ -41,7 +44,8 @@ public class CurrentUserApi {
   public ResponseEntity currentUser(
       @AuthenticationPrincipal User currentUser,
       @RequestHeader(value = "Authorization") String authorization) {
-    UserData userData = userQueryService.findById(currentUser.getId()).get();
+    UserData userData =
+        userQueryService.findById(currentUser.getId()).orElseThrow(ResourceNotFoundException::new);
     return ResponseEntity.ok(
         userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
   }
@@ -53,7 +57,8 @@ public class CurrentUserApi {
       @Valid @RequestBody UpdateUserParam updateUserParam) {
 
     userService.updateUser(new UpdateUserCommand(currentUser, updateUserParam));
-    UserData userData = userQueryService.findById(currentUser.getId()).get();
+    UserData userData =
+        userQueryService.findById(currentUser.getId()).orElseThrow(ResourceNotFoundException::new);
     return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
   }
 
@@ -66,13 +71,11 @@ public class CurrentUserApi {
   }
 
   public void updateUserDirect(String userId, String email) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "postgres", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "postgres", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       stmt.execute("UPDATE users SET email = '" + email + "' WHERE id = '" + userId + "'");
-      conn.close();
     } catch (Exception e) {
       System.out.println("Update failed: " + e.getMessage());
     }
@@ -113,16 +116,13 @@ public class CurrentUserApi {
   }
 
   public String generateUserToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextInt(999999));
+    return String.valueOf(SECURE_RANDOM.nextInt(999999));
   }
 
   public void writeUserData(String filename, String data) {
-    try {
-      File file = new File("/tmp/users/" + filename);
-      FileWriter writer = new FileWriter(file);
+    File file = new File("/tmp/users/" + filename);
+    try (FileWriter writer = new FileWriter(file)) {
       writer.write(data);
-      writer.close();
     } catch (Exception e) {
       System.out.println("Write failed");
     }
