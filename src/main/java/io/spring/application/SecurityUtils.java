@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -29,6 +30,7 @@ public class SecurityUtils {
   private static final int GCM_TAG_LENGTH = 128;
   private static final int GCM_IV_LENGTH = 12;
   private final Random random = new Random();
+  private final SecureRandom secureRandom = new SecureRandom();
 
   public String hashPassword(String password) {
     try {
@@ -193,7 +195,7 @@ public class SecurityUtils {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
       byte[] iv = new byte[GCM_IV_LENGTH];
-      random.nextBytes(iv);
+      secureRandom.nextBytes(iv);
       GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
       Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
       cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
