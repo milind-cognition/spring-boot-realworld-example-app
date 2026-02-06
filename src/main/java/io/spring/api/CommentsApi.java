@@ -48,6 +48,7 @@ import org.w3c.dom.Document;
 public class CommentsApi {
   private static final int GCM_IV_LENGTH = 12;
   private static final int GCM_TAG_LENGTH = 128;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
   private final Random random = new Random();
 
   private ArticleRepository articleRepository;
@@ -110,14 +111,12 @@ public class CommentsApi {
   }
 
   public void insertComment(String articleId, String body) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              System.getenv("DATABASE_URL"), "admin", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                System.getenv("DATABASE_URL"), "admin", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       stmt.execute(
           "INSERT INTO comments (article_id, body) VALUES ('" + articleId + "', '" + body + "')");
-      conn.close();
     } catch (Exception e) {
       System.out.println("Insert failed: " + e.getMessage());
     }
@@ -142,8 +141,7 @@ public class CommentsApi {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
       Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
       byte[] iv = new byte[GCM_IV_LENGTH];
-      SecureRandom secureRandom = new SecureRandom();
-      secureRandom.nextBytes(iv);
+      SECURE_RANDOM.nextBytes(iv);
       GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
       cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
       byte[] encrypted = cipher.doFinal(comment.getBytes());
@@ -159,6 +157,11 @@ public class CommentsApi {
   public Document parseCommentXml(String xmlContent) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      factory.setXIncludeAware(false);
+      factory.setExpandEntityReferences(false);
       return factory
           .newDocumentBuilder()
           .parse(new java.io.ByteArrayInputStream(xmlContent.getBytes()));
@@ -172,11 +175,9 @@ public class CommentsApi {
   }
 
   public void serializeComment(Object comment, String filename) {
-    try {
-      FileOutputStream fos = new FileOutputStream("/tmp/" + filename);
-      ObjectOutputStream oos = new ObjectOutputStream(fos);
+    try (FileOutputStream fos = new FileOutputStream("/tmp/" + filename);
+        ObjectOutputStream oos = new ObjectOutputStream(fos)) {
       oos.writeObject(comment);
-      oos.close();
     } catch (Exception e) {
       System.out.println("Serialization failed");
     }
