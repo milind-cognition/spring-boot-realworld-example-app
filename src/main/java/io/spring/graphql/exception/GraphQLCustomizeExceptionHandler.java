@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       new DefaultDataFetcherExceptionHandler();
 
   @Override
-  public DataFetcherExceptionHandlerResult onException(
+  public CompletableFuture<DataFetcherExceptionHandlerResult> handleException(
       DataFetcherExceptionHandlerParameters handlerParameters) {
     if (handlerParameters.getException() instanceof InvalidAuthenticationException) {
       GraphQLError graphqlError =
@@ -37,12 +37,13 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
               .build();
-      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+      ConstraintViolationException cve =
+          (ConstraintViolationException) handlerParameters.getException();
       List<FieldErrorResource> errors = new ArrayList<>();
-      for (ConstraintViolation<?> violation :
-          ((ConstraintViolationException) handlerParameters.getException())
-              .getConstraintViolations()) {
+      for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
             new FieldErrorResource(
                 violation.getRootBeanClass().getName(),
@@ -61,9 +62,10 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
               .build();
-      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else {
-      return defaultHandler.onException(handlerParameters);
+      return defaultHandler.handleException(handlerParameters);
     }
   }
 
@@ -88,7 +90,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     List<ErrorItem> errorItems =
         errorMap.entrySet().stream()
             .map(kv -> ErrorItem.newBuilder().key(kv.getKey()).value(kv.getValue()).build())
-            .collect(Collectors.toList());
+            .toList();
     return Error.newBuilder().message("BAD_REQUEST").errors(errorItems).build();
   }
 

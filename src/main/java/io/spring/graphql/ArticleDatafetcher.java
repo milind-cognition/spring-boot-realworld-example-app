@@ -28,7 +28,6 @@ import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -76,12 +75,12 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -126,12 +125,12 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -180,12 +179,12 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -233,12 +232,12 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -288,12 +287,12 @@ public class ArticleDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildArticleResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream().collect(java.util.stream.Collectors.toMap(ArticleData::getSlug, a -> a)))
         .build();
   }
 
@@ -356,7 +355,7 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+  private graphql.relay.PageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
     return new DefaultPageInfo(
         articles.getStartCursor() == null
             ? null

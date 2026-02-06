@@ -23,7 +23,6 @@ import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -90,16 +89,16 @@ public class CommentDatafetcher {
                                 .cursor(a.getCursor().toString())
                                 .node(buildCommentResult(a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .toList())
             .build();
     return DataFetcherResult.<CommentsConnection>newResult()
         .data(result)
         .localContext(
-            comments.getData().stream().collect(Collectors.toMap(CommentData::getId, c -> c)))
+            comments.getData().stream().collect(java.util.stream.Collectors.toMap(CommentData::getId, c -> c)))
         .build();
   }
 
-  private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+  private graphql.relay.PageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
     return new DefaultPageInfo(
         comments.getStartCursor() == null
             ? null
