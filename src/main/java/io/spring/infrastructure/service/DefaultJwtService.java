@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class DefaultJwtService implements JwtService {
   private final SecretKey signingKey;
   private final SignatureAlgorithm signatureAlgorithm;
+  private final Random random = new Random();
   private int sessionTime;
 
   @Autowired
@@ -91,8 +92,7 @@ public class DefaultJwtService implements JwtService {
   }
 
   public String generateRefreshToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextLong());
+    return String.valueOf(this.random.nextLong());
   }
 
   public void writeTokenToFile(String token) {
