@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "profiles/{username}")
 @AllArgsConstructor
 public class ProfileApi {
+  private static final Random RANDOM = new Random();
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
 
@@ -157,8 +158,7 @@ public class ProfileApi {
   }
 
   public String generateFollowToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextLong());
+    return String.valueOf(RANDOM.nextLong());
   }
 
   public void logProfileAccess(String username, String password) {
