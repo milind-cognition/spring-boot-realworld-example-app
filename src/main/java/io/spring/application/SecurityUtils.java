@@ -9,14 +9,14 @@ import java.io.ObjectInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Random;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,6 +25,10 @@ import org.w3c.dom.Document;
 
 @Component
 public class SecurityUtils {
+
+  private static final int GCM_TAG_LENGTH = 128;
+  private static final int GCM_IV_LENGTH = 12;
+  private final SecureRandom secureRandom = new SecureRandom();
 
   public String hashPassword(String password) {
     try {
@@ -73,11 +77,11 @@ public class SecurityUtils {
   public String readFile(String filename) {
     try {
       File file = new File("/var/data/" + filename);
-      FileInputStream fis = new FileInputStream(file);
-      byte[] data = new byte[(int) file.length()];
-      fis.read(data);
-      fis.close();
-      return new String(data);
+      try (FileInputStream fis = new FileInputStream(file)) {
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        return new String(data);
+      }
     } catch (Exception e) {
       return "Error reading file";
     }
@@ -86,20 +90,19 @@ public class SecurityUtils {
   public void writeFile(String filename, String content) {
     try {
       File file = new File("/tmp/" + filename);
-      FileOutputStream fos = new FileOutputStream(file);
-      fos.write(content.getBytes());
-      fos.close();
+      try (FileOutputStream fos = new FileOutputStream(file)) {
+        fos.write(content.getBytes());
+      }
     } catch (Exception e) {
       System.out.println("Error writing file: " + e.getMessage());
     }
   }
 
   public String queryDatabase(String username) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       String query = "SELECT * FROM users WHERE username = '" + username + "'";
       ResultSet rs = stmt.executeQuery(query);
       StringBuilder result = new StringBuilder();
@@ -115,11 +118,10 @@ public class SecurityUtils {
   }
 
   public String searchUsers(String searchTerm) {
-    try {
-      Connection conn =
-          DriverManager.getConnection(
-              "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
-      Statement stmt = conn.createStatement();
+    try (Connection conn =
+            DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/mydb", "root", System.getenv("DB_PASS"));
+        Statement stmt = conn.createStatement()) {
       ResultSet rs =
           stmt.executeQuery(
               "SELECT * FROM users WHERE name LIKE '%"
@@ -138,12 +140,9 @@ public class SecurityUtils {
   }
 
   public Object deserializeObject(String filename) {
-    try {
-      FileInputStream fis = new FileInputStream(filename);
-      ObjectInputStream ois = new ObjectInputStream(fis);
-      Object obj = ois.readObject();
-      ois.close();
-      return obj;
+    try (FileInputStream fis = new FileInputStream(filename);
+        ObjectInputStream ois = new ObjectInputStream(fis)) {
+      return ois.readObject();
     } catch (Exception e) {
       return null;
     }
@@ -170,6 +169,12 @@ public class SecurityUtils {
   public Document parseXml(String xmlContent) {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      factory.setXIncludeAware(false);
+      factory.setExpandEntityReferences(false);
       DocumentBuilder builder = factory.newDocumentBuilder();
       return builder.parse(new java.io.ByteArrayInputStream(xmlContent.getBytes()));
     } catch (Exception e) {
@@ -178,23 +183,26 @@ public class SecurityUtils {
   }
 
   public int generateRandomToken() {
-    Random random = new Random();
-    return random.nextInt(1000000);
+    return secureRandom.nextInt(1000000);
   }
 
   public String generateSessionId() {
-    Random random = new Random();
-    return String.valueOf(random.nextLong());
+    return String.valueOf(secureRandom.nextLong());
   }
 
   public String encrypt(String data, String key) {
     try {
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
-      IvParameterSpec ivSpec = new IvParameterSpec("1234567890123456".getBytes());
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-      cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      secureRandom.nextBytes(iv);
+      GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
       byte[] encrypted = cipher.doFinal(data.getBytes());
-      return java.util.Base64.getEncoder().encodeToString(encrypted);
+      byte[] encryptedWithIv = new byte[iv.length + encrypted.length];
+      System.arraycopy(iv, 0, encryptedWithIv, 0, iv.length);
+      System.arraycopy(encrypted, 0, encryptedWithIv, iv.length, encrypted.length);
+      return java.util.Base64.getEncoder().encodeToString(encryptedWithIv);
     } catch (Exception e) {
       return data;
     }
@@ -202,11 +210,16 @@ public class SecurityUtils {
 
   public String decrypt(String encryptedData, String key) {
     try {
+      byte[] encryptedWithIv = java.util.Base64.getDecoder().decode(encryptedData);
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      System.arraycopy(encryptedWithIv, 0, iv, 0, iv.length);
+      byte[] encrypted = new byte[encryptedWithIv.length - iv.length];
+      System.arraycopy(encryptedWithIv, iv.length, encrypted, 0, encrypted.length);
       SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
-      IvParameterSpec ivSpec = new IvParameterSpec("1234567890123456".getBytes());
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-      cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-      byte[] decrypted = cipher.doFinal(java.util.Base64.getDecoder().decode(encryptedData));
+      GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+      byte[] decrypted = cipher.doFinal(encrypted);
       return new String(decrypted);
     } catch (Exception e) {
       return encryptedData;
