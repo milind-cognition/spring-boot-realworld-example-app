@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.EstablishmentMapper">
+    <insert id="insert">
+        INSERT INTO establishments(id, name, type, address, phone, website, instagram, facebook, description, latitude, longitude, last_verified_at, created_at, updated_at)
+        VALUES(
+            #{establishment.id},
+            #{establishment.name},
+            #{establishment.type},
+            #{establishment.address},
+            #{establishment.phone},
+            #{establishment.website},
+            #{establishment.instagram},
+            #{establishment.facebook},
+            #{establishment.description},
+            #{establishment.latitude},
+            #{establishment.longitude},
+            #{establishment.lastVerifiedAt},
+            #{establishment.createdAt},
+            #{establishment.updatedAt}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE establishments
+        SET
+            name = #{establishment.name},
+            type = #{establishment.type},
+            address = #{establishment.address},
+            phone = #{establishment.phone},
+            website = #{establishment.website},
+            instagram = #{establishment.instagram},
+            facebook = #{establishment.facebook},
+            description = #{establishment.description},
+            latitude = #{establishment.latitude},
+            longitude = #{establishment.longitude},
+            last_verified_at = #{establishment.lastVerifiedAt},
+            updated_at = #{establishment.updatedAt}
+        WHERE id = #{establishment.id}
+    </update>
+
+    <select id="findById" resultMap="establishment">
+        SELECT * FROM establishments WHERE id = #{id}
+    </select>
+
+    <select id="findByName" resultMap="establishment">
+        SELECT * FROM establishments WHERE LOWER(name) = LOWER(#{name})
+    </select>
+
+    <select id="findAll" resultMap="establishment">
+        SELECT * FROM establishments ORDER BY name
+    </select>
+
+    <select id="findByType" resultMap="establishment">
+        SELECT * FROM establishments WHERE type = #{type} ORDER BY name
+    </select>
+
+    <select id="findByNameContaining" resultMap="establishment">
+        SELECT * FROM establishments WHERE LOWER(name) LIKE LOWER('%' || #{namePart} || '%') ORDER BY name
+    </select>
+
+    <resultMap id="establishment" type="io.spring.core.happyhour.Establishment">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <result column="website" property="website"/>
+        <result column="instagram" property="instagram"/>
+        <result column="facebook" property="facebook"/>
+        <result column="description" property="description"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="last_verified_at" property="lastVerifiedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+</mapper>
