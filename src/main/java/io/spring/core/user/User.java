@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
-  private static final Random RANDOM = new Random(); // NOSONAR: demo vulnerability
+  private static final Random RANDOM = new Random();
   private String id;
   private String email;
   private String username;
