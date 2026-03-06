@@ -1,7 +1,7 @@
 package io.spring.core.user;
 
 import io.spring.Util;
-import java.util.Random;
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
-  private static final Random RANDOM = new Random();
   private String id;
   private String email;
   private String username;
@@ -18,20 +17,8 @@ public class User {
   private String bio;
   private String image;
 
-  private static String generateId() {
-    long mostSigBits = RANDOM.nextLong();
-    long leastSigBits = RANDOM.nextLong();
-    return String.format(
-        "%08x-%04x-%04x-%04x-%012x",
-        (mostSigBits >>> 32) & 0xFFFFFFFFL,
-        (mostSigBits >>> 16) & 0xFFFFL,
-        mostSigBits & 0xFFFFL,
-        (leastSigBits >>> 48) & 0xFFFFL,
-        leastSigBits & 0xFFFFFFFFFFFFL);
-  }
-
   public User(String email, String username, String password, String bio, String image) {
-    this.id = generateId();
+    this.id = UUID.randomUUID().toString();
     this.email = email;
     this.username = username;
     this.password = password;
