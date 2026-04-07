@@ -206,6 +206,33 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(403);
   }
 
+  @Test
+  public void should_404_if_article_not_found_for_update() throws Exception {
+    when(articleRepository.findBySlug(anyString())).thenReturn(Optional.empty());
+    Map<String, Object> updateParam = prepareUpdateParam("title", "body", "desc");
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", "not-exists")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_404_if_article_not_found_for_delete() throws Exception {
+    when(articleRepository.findBySlug(anyString())).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}", "not-exists")
+        .then()
+        .statusCode(404);
+  }
+
   private HashMap<String, Object> prepareUpdateParam(
       final String title, final String body, final String description) {
     return new HashMap<String, Object>() {

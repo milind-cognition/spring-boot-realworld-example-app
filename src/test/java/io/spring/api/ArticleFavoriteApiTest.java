@@ -100,4 +100,34 @@ public class ArticleFavoriteApiTest extends TestWithCurrentUser {
         .body("article.id", equalTo(article.getId()));
     verify(articleFavoriteRepository).remove(new ArticleFavorite(article.getId(), user.getId()));
   }
+
+  @Test
+  public void should_get_404_if_article_not_found_when_favorite() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent"))).thenReturn(Optional.empty());
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/articles/{slug}/favorite", "non-existent")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_if_article_not_found_when_unfavorite() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent"))).thenReturn(Optional.empty());
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}/favorite", "non-existent")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_401_if_not_authenticated_when_favorite() throws Exception {
+    RestAssuredMockMvc.when()
+        .post("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
 }
